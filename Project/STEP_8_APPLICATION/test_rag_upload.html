@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test RAG Upload</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 p-8">
+    <div class="max-w-2xl mx-auto bg-white rounded-xl shadow-lg p-6">
+        <h1 class="text-2xl font-bold mb-6">Test PDF Upload to RAG</h1>
+        
+        <div class="mb-4">
+            <label class="block text-sm font-medium text-gray-700 mb-2">Select PDF File:</label>
+            <input type="file" id="pdfFileInput" accept=".pdf" class="block w-full text-sm text-gray-600 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-600 file:text-white hover:file:bg-blue-700 mb-3">
+        </div>
+        
+        <button id="uploadPdfBtn" class="w-full bg-gradient-to-r from-blue-600 to-cyan-600 text-white py-3 px-6 rounded-xl hover:from-blue-700 hover:to-cyan-700 transition font-semibold">
+            📄 Process PDF
+        </button>
+        
+        <div id="uploadStatus" class="mt-4"></div>
+        
+        <div id="consoleOutput" class="mt-6 p-4 bg-gray-900 text-green-400 rounded-lg font-mono text-sm max-h-96 overflow-y-auto">
+            <div class="font-bold text-yellow-400 mb-2">Console Output:</div>
+        </div>
+    </div>
+
+    <script>
+        const consoleDiv = document.getElementById('consoleOutput');
+        
+        function log(message, type = 'log') {
+            const colors = {
+                'log': 'text-green-400',
+                'error': 'text-red-400',
+                'info': 'text-blue-400'
+            };
+            const div = document.createElement('div');
+            div.className = colors[type] || 'text-green-400';
+            div.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            consoleDiv.appendChild(div);
+            consoleDiv.scrollTop = consoleDiv.scrollHeight;
+            console.log(message);
+        }
+
+        log('Page loaded, attaching event listener...');
+
+        document.getElementById('uploadPdfBtn').addEventListener('click', async function() {
+            log('📄 Upload PDF button clicked!');
+            
+            const fileInput = document.getElementById('pdfFileInput');
+            const file = fileInput.files[0];
+            
+            if (!file) {
+                log('⚠️ No file selected', 'error');
+                alert('⚠️ Please select a PDF file first');
+                return;
+            }
+            
+            log(`📄 File selected: ${file.name} (${file.size} bytes)`);
+            
+            const statusEl = document.getElementById('uploadStatus');
+            statusEl.textContent = '⏳ Uploading and processing PDF...';
+            statusEl.className = 'mt-4 text-blue-600 text-sm font-medium';
+            
+            // Disable button during upload
+            this.disabled = true;
+            this.textContent = '⏳ Processing...';
+            
+            const formData = new FormData();
+            formData.append('pdf_file', file);
+            formData.append('session_id', 'default');
+            
+            try {
+                log('📤 Sending PDF to server at /upload_pdf...');
+                const response = await fetch('/upload_pdf', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                log(`📥 Server response status: ${response.status}`);
+                const result = await response.json();
+                log(`📥 Server response: ${JSON.stringify(result)}`);
+                
+                if (result.success) {
+                    statusEl.textContent = `✅ ${result.message}`;
+                    statusEl.className = 'mt-4 text-green-600 text-sm font-medium';
+                    log('✅ PDF uploaded successfully!', 'info');
+                } else {
+                    statusEl.textContent = `❌ Error: ${result.error}`;
+                    statusEl.className = 'mt-4 text-red-600 text-sm font-medium';
+                    log(`❌ Error: ${result.error}`, 'error');
+                }
+            } catch (error) {
+                log(`❌ Upload error: ${error.message}`, 'error');
+                statusEl.textContent = `❌ Error: ${error.message}`;
+                statusEl.className = 'mt-4 text-red-600 text-sm font-medium';
+            } finally {
+                // Re-enable button
+                this.disabled = false;
+                this.textContent = '📄 Process PDF';
+                log('Button re-enabled');
+            }
+        });
+
+        log('Event listener attached successfully!');
+    </script>
+</body>
+</html>

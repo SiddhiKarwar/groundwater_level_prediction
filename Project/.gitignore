@@ -1,0 +1,43 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# Virtual Environment
+.venv/
+venv/
+ENV/
+env/
+.env
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Project specific
+*.pkl.bak
+*.csv.bak
+.ipynb_checkpoints/
+
+# Logs
+*.log
+
+# Temporary files
+*.tmp
+*.temp
+CLEANUP_COMPLETE.txt
+REORGANIZATION_COMPLETE.txt
+
+# Large datasets (optional - uncomment if datasets are too large)
+# STEP_1_RAW_DATA/*.xlsx
+# STEP_3_PROCESSED_DATA/*.csv
